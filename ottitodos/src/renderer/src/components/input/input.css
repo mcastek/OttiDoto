@@ -1,0 +1,29 @@
+.input_container {
+    display: flex;
+    flex-flow: column;
+    gap: 4px;
+    width: 100%;
+
+    input {
+        border: 1px solid var(--text-color-500);
+        border-radius: 0.5em;
+        background-color: var(--bg-color-600);
+        padding: 6px;
+        color: white;
+    }
+
+    input:focus-visible {
+        border: 1px solid var(--text-color-300);
+        outline: none;
+    }
+    
+    input::placeholder {
+        color: var(#364263);
+    }
+
+}
+
+.input_container label {
+    color: var(--text-color-100);
+    font-size: 14px;
+}

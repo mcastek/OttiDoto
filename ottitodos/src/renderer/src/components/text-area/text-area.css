@@ -1,0 +1,28 @@
+.textarea_container {
+    display: flex;
+    flex-flow: column;
+    gap: 4px;
+    width: 100%;
+
+    textarea {
+        border: 1px solid var(--text-color-500);
+        border-radius: 0.5em;
+        background-color: var(--bg-color-600);
+        padding: 6px;
+    }
+
+    textarea:focus-visible {
+        border: 1px solid var(--text-color-300);
+        outline: none;
+    }
+    
+    textarea::placeholder {
+        color: var(--text-color-500);
+    }
+
+}
+
+.textarea_container label {
+    color: var(--text-color-100);
+    font-size: 14px;
+}
