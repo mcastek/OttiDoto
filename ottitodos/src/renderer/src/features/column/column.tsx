@@ -2,6 +2,7 @@ import { Activity, useState } from 'react'
 import { Task, TasksColumn } from 'src/db/schemas'
 import CreateTaskForm from '../create-task-form'
 import { ColumnHeader } from './column-header'
+import { useSortable } from '@dnd-kit/react/sortable'
 
 type ColumnProps = {
     listId: string
@@ -12,9 +13,16 @@ type ColumnProps = {
 export default function Column({ listId, column, tasks }: ColumnProps) {
     const [openCreateCard, setOpenCreateCard] = useState<boolean>(false)
     const [edited, setEdited] = useState<boolean>(false)
+    const { ref } = useSortable({
+        id: column.id!,
+        index: column.position,
+        type: 'column',
+        accept: ['task', 'column']
+    })
 
     return (
         <div
+            ref={ref}
             style={{
                 display: 'flex',
                 flexDirection: 'column',
