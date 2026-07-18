@@ -1,15 +1,17 @@
 import { useDraggable } from '@dnd-kit/react'
 
-import type { Task } from 'src/db/schemas'
+import type { Task, TaskWithSubTasks } from 'src/db/schemas'
 import SubTaskList from '../sub-tasks/sub-task-list'
 import { Activity, useEffect, useState } from 'react'
 
-export default function TaskCard({ task_data }: { task_data: Task }) {
+export default function TaskCard({ task_data }: { task_data: TaskWithSubTasks }) {
     const [showSubTasks, setShowSubTasks] = useState<boolean>(true)
+
+    const taskInfo = task_data.tasks
     const { ref, isDragging } = useDraggable({
-        id: task_data.id!,
+        id: taskInfo.id,
         type: 'task'
-    })
+    }) 
 
     useEffect(() => {
         isDragging ? setShowSubTasks(false) : setShowSubTasks(true)
@@ -28,8 +30,8 @@ export default function TaskCard({ task_data }: { task_data: Task }) {
                     marginBottom: '.2em'
                 }}
             >
-                <p>{task_data.title}</p>
-                <p>{task_data.description}</p>
+                <p>{taskInfo.title}</p>
+                <p>{taskInfo.description}</p>
             </div>
             <Activity mode={showSubTasks ? 'visible' : 'hidden'}>
                 <SubTaskList />

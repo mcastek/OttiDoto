@@ -19,6 +19,7 @@ export const tasksTable = sqliteTable('tasks_table', {
 })
 
 export const TaskSchema = createInsertSchema(tasksTable, {
+    id: z.uuid(),
     title: z
         .string()
         .min(1, { message: 'Nazwa zadania nie może być pusta' })
@@ -26,15 +27,15 @@ export const TaskSchema = createInsertSchema(tasksTable, {
     description: z
         .string()
         .max(500, { message: 'Opis zadania nie może być dłuższy niż 500 znaków' })
-        .optional()
         .nullable(),
-    badgeId: z.string().optional().nullable()
+    badgeId: z.string().nullable().optional()
 })
-
-export const CreateTaskSchema = TaskSchema
+export const TaskCardSchema = TaskSchema.extend({ id: z.uuid().nullable() })
+export const CreateTaskSchema = TaskSchema.omit({ id: true })
 export const UpdateTaskSchema = TaskSchema.extend({ id: uuid() })
 
 export type Task = z.infer<typeof TaskSchema>
+export type TaskCardProps = z.infer<typeof TaskCardSchema>
 export type CreateTaskDTO = z.infer<typeof CreateTaskSchema>
 export type UpdateTaskDTO = z.infer<typeof UpdateTaskSchema>
 export type DeleteTaskDTO = { id: string }

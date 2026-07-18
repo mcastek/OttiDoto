@@ -16,6 +16,7 @@ export const tasksColumnsTable = sqliteTable('tasks_column_table', {
 })
 
 export const TasksColumnSchema = createInsertSchema(tasksColumnsTable, {
+    id: z.uuid().nullable,
     name: z
         .string()
         .min(1, { message: 'Nazwa listy nie może być pusta' })

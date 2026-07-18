@@ -29,6 +29,8 @@ function RouteComponent() {
         return [...staticColumns, ...(board?.columns || [])].sort((a, b) => a.position - b.position)
     }, [listId, board?.columns])
 
+    console.log(allColumns)
+
     const handleAddNewColumn = () => {
         const newColumn = {
             name: '',
@@ -45,7 +47,9 @@ function RouteComponent() {
 
     if (isLoading) return <div>Loading...</div>
 
-    const tasks = board ? board.tasks : []
+    const tasks = board ? board.taskWithSubTasks : []
+
+    console.log(tasks)
 
     return (
         <div>
@@ -104,7 +108,7 @@ function RouteComponent() {
                                 key={`${crypto.randomUUID()}-${column.position}`}
                                 listId={listId}
                                 column={column}
-                                tasks={tasks.filter((task) => task.columnId === column.id)}
+                                tasks={tasks.filter((d) => d.tasks.columnId === column.id)}
                             />
                         ))}
                     </DragDropProvider>

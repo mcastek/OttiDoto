@@ -29,6 +29,7 @@ export async function createColumn(
     const { name, listId, position } = validationData.data
 
     const newColumnData: CreateTasksColumn = {
+        id: null,
         name: name,
         listId: listId,
         editable: true,

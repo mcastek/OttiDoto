@@ -1,6 +1,6 @@
 import { ElectronAPI } from '@electron-toolkit/preload'
-import type { TasksList, CreateTasksListDTO, listBoardData } from '../db/schemas/tasks-lists.table'
-import { CreateTaskDTO, CreateTasksColumn, Task } from 'src/db/schemas'
+import type { TasksList, CreateTasksListDTO } from '../db/schemas/tasks-lists.table'
+import { CreateTaskDTO, CreateTasksColumn, listBoardData, Task } from 'src/db/schemas'
 
 declare global {
     interface Window {

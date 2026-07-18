@@ -1,5 +1,5 @@
-import { Activity, useState } from 'react'
-import { Task, TasksColumn } from 'src/db/schemas'
+import { Activity, useCallback, useState } from 'react'
+import { Task, TasksColumn, TaskWithSubTasks } from 'src/db/schemas'
 import CreateTaskForm from '../create-task-form'
 import { ColumnHeader } from './column-header'
 import { useSortable } from '@dnd-kit/react/sortable'
@@ -11,7 +11,7 @@ import { PointerSensor } from '@dnd-kit/react'
 type ColumnProps = {
     listId: string
     column: TasksColumn
-    tasks?: Task[]
+    tasks?: TaskWithSubTasks[]
 }
 
 export default function Column({ listId, column, tasks }: ColumnProps) {
@@ -32,6 +32,11 @@ export default function Column({ listId, column, tasks }: ColumnProps) {
         ]
     })
 
+    const handleEdited = useCallback((e: boolean) => {
+        setEdited(e)
+        if (e) setOpenCreateCard(false)
+    }, [])
+
     return (
         <div
             ref={ref}
@@ -48,10 +53,7 @@ export default function Column({ listId, column, tasks }: ColumnProps) {
                 <ColumnHeader
                     listId={listId}
                     column_data={column}
-                    onEdited={(e) => {
-                        setEdited(e)
-                        setOpenCreateCard(false)
-                    }}
+                    onEdited={handleEdited}
                 />
                 <Activity mode={column.name !== 'Done' ? 'visible' : 'hidden'}>
                     <button onClick={() => setOpenCreateCard((prev) => !prev)} disabled={edited}>
@@ -66,7 +68,7 @@ export default function Column({ listId, column, tasks }: ColumnProps) {
                     onCloseForm={() => setOpenCreateCard(false)}
                 />
             </Activity>
-            <div style={{display: 'flex', flexDirection: 'column', gap: ".5em"}}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '.5em' }}>
                 {tasks?.map((task) => (
                     <TaskCard task_data={task} />
                 ))}

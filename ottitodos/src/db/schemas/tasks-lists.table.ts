@@ -43,8 +43,3 @@ export type CreateTasksListDTO = z.infer<typeof tasksListsSchema>
 export type DeleteTaskListDTO = {
     id: string
 }
-
-export type listBoardData = {
-    tasks: Task[]
-    columns: TasksColumn[]
-}
