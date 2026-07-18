@@ -10,6 +10,8 @@ export async function createTask(
     _prevState: TaskFormState,
     formData: FormData
 ): Promise<TaskFormState> {
+    console.log('ping!')
+
     const ValidationData = CreateTaskSchema.safeParse({
         listId: formData.get('list_id'),
         columnId: formData.get('column_id'),
@@ -18,6 +20,7 @@ export async function createTask(
     })
 
     if (!ValidationData.success) {
+        console.log(ValidationData.error)
         return {
             success: false,
             errors: ValidationData.error.flatten().fieldErrors

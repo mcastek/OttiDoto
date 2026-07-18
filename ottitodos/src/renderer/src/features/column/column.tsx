@@ -3,6 +3,10 @@ import { Task, TasksColumn } from 'src/db/schemas'
 import CreateTaskForm from '../create-task-form'
 import { ColumnHeader } from './column-header'
 import { useSortable } from '@dnd-kit/react/sortable'
+import { RestrictToHorizontalAxis } from '@dnd-kit/abstract/modifiers'
+import { PointerActivationConstraints } from '@dnd-kit/dom'
+import TaskCard from '../task/task-card'
+import { PointerSensor } from '@dnd-kit/react'
 
 type ColumnProps = {
     listId: string
@@ -16,8 +20,16 @@ export default function Column({ listId, column, tasks }: ColumnProps) {
     const { ref } = useSortable({
         id: column.id!,
         index: column.position,
+        modifiers: [RestrictToHorizontalAxis],
         type: 'column',
-        accept: ['task', 'column']
+        accept: ['task', 'column'],
+        sensors: [
+            PointerSensor.configure({
+                activationConstraints: [
+                    new PointerActivationConstraints.Delay({ value: 150, tolerance: 5 })
+                ]
+            })
+        ]
     })
 
     return (
@@ -54,11 +66,9 @@ export default function Column({ listId, column, tasks }: ColumnProps) {
                     onCloseForm={() => setOpenCreateCard(false)}
                 />
             </Activity>
-            <div>
+            <div style={{display: 'flex', flexDirection: 'column', gap: ".5em"}}>
                 {tasks?.map((task) => (
-                    <div key={task.id} style={{ backgroundColor: '#1F2736', padding: '.5em' }}>
-                        {task.title}
-                    </div>
+                    <TaskCard task_data={task} />
                 ))}
             </div>
         </div>

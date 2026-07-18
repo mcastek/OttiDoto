@@ -26,14 +26,15 @@ export const TaskSchema = createInsertSchema(tasksTable, {
     description: z
         .string()
         .max(500, { message: 'Opis zadania nie może być dłuższy niż 500 znaków' })
-        .optional(),
-    badgeId: z.string().optional()
+        .optional()
+        .nullable(),
+    badgeId: z.string().optional().nullable()
 })
 
 export const CreateTaskSchema = TaskSchema
 export const UpdateTaskSchema = TaskSchema.extend({ id: uuid() })
 
-export type Task = InferSelectModel<typeof tasksTable>
+export type Task = z.infer<typeof TaskSchema>
 export type CreateTaskDTO = z.infer<typeof CreateTaskSchema>
 export type UpdateTaskDTO = z.infer<typeof UpdateTaskSchema>
 export type DeleteTaskDTO = { id: string }

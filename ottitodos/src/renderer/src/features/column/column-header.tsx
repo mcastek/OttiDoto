@@ -1,8 +1,9 @@
 import Input from '@renderer/components/input/input'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import React, { Activity, useEffect, useRef, useState } from 'react'
+import React, { Activity, useRef, useState } from 'react'
 import { listBoardData, TasksColumn } from 'src/db/schemas'
 import { ColumnFormState, createColumn } from '../../../formActions/column.actions'
+import { useOnClickOutside } from '@renderer/hooks/useOnClickOutside'
 
 const initialState: ColumnFormState = {
     success: false,
@@ -22,18 +23,18 @@ export const ColumnHeader = ({ listId, column_data, onEdited }: ColumnHeaderProp
     const formRef = useRef<HTMLFormElement>(null)
     const queryClient = useQueryClient()
 
-    useEffect(() => {
-        if (!editName) return
-
-        const handleClickOutside = (event: MouseEvent) => {
-            if (formRef.current && !formRef.current.contains(event.target as Node)) {
-                handleCancel()
-            }
+    const handleCancel = () => {
+        if (!column_data.id) {
+            queryClient.setQueryData(['board', listId], (oldBoard: listBoardData) => ({
+                ...oldBoard,
+                columns: oldBoard.columns.filter((c: TasksColumn) => c.id !== column_data.id)
+            }))
         }
+        setEditName(false)
+        onEdited?.(false)
+    }
 
-        document.addEventListener('mousedown', handleClickOutside)
-        return () => document.removeEventListener('mousedown', handleClickOutside)
-    }, [editName])
+    useOnClickOutside(formRef, handleCancel)
 
     const mutation = useMutation({
         mutationFn: async (formData: FormData) => {
@@ -51,17 +52,6 @@ export const ColumnHeader = ({ listId, column_data, onEdited }: ColumnHeaderProp
 
         const newFormDate = new FormData(e.currentTarget)
         mutation.mutate(newFormDate)
-    }
-
-    const handleCancel = () => {
-        if (!column_data.id) {
-            queryClient.setQueryData(['board', listId], (oldBoard: listBoardData) => ({
-                ...oldBoard,
-                columns: oldBoard.columns.filter((c: TasksColumn) => c.id !== column_data.id)
-            }))
-        }
-        setEditName(false)
-        onEdited?.(false)
     }
 
     return (
