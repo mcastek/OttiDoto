@@ -1,6 +1,12 @@
 import { ElectronAPI } from '@electron-toolkit/preload'
 import type { TasksList, CreateTasksListDTO } from '../db/schemas/tasks-lists.table'
-import { CreateTaskDTO, CreateTasksColumn, listBoardData, Task } from 'src/db/schemas'
+import {
+    CreateSubTask,
+    CreateTaskDTO,
+    CreateTasksColumn,
+    listBoardData,
+    Task
+} from 'src/db/schemas'
 
 declare global {
     interface Window {
@@ -17,6 +23,9 @@ declare global {
             createTask: (task_data: CreateTaskDTO) => Promise<void>
             deleteTask: (taskId: string) => Promise<void>
             changeColumn: (taskId: string, columnId: string) => Promise<void>
+        }
+        subTaskApi: {
+            createSubTask: (subTask_data: CreateSubTask) => Promise<void>
         }
         columnApi: {
             createColumn: (column_data: CreateTasksColumn) => Promise<void>

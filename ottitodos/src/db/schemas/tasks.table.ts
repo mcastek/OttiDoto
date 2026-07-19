@@ -3,7 +3,6 @@ import { taskBadgesTable } from './task-badges.table'
 import { tasksListsTable } from './tasks-lists.table'
 import { createInsertSchema } from 'drizzle-orm/zod'
 import z, { uuid } from 'zod'
-import { InferSelectModel } from 'drizzle-orm'
 
 export const tasksTable = sqliteTable('tasks_table', {
     id: text()

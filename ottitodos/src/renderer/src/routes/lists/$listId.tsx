@@ -3,7 +3,7 @@ import Column from '../../features/column/column'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { useMemo } from 'react'
-import { listBoardData, TasksColumn } from 'src/db/schemas'
+import { TasksColumn } from 'src/db/schemas'
 
 export const Route = createFileRoute('/lists/$listId')({
     component: RouteComponent
@@ -28,8 +28,6 @@ function RouteComponent() {
         const staticColumns = COLUMNSTATE.map((col) => ({ ...col, listId }))
         return [...staticColumns, ...(board?.columns || [])].sort((a, b) => a.position - b.position)
     }, [listId, board?.columns])
-
-    console.log(allColumns)
 
     const handleAddNewColumn = () => {
         const newColumn = {

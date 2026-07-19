@@ -1,6 +1,12 @@
-import { eq, inArray } from 'drizzle-orm'
+import { eq } from 'drizzle-orm'
 import { db } from '../../db'
-import { listBoardData, subTasksTable, tasksColumnsTable, tasksTable } from '../../db/schemas'
+import {
+    listBoardData,
+    subTasksTable,
+    tasksColumnsTable,
+    tasksTable,
+    TaskWithSubTasks
+} from '../../db/schemas'
 
 export async function getListBoard(listId: string): Promise<listBoardData> {
     try {
@@ -10,10 +16,27 @@ export async function getListBoard(listId: string): Promise<listBoardData> {
             .where(eq(tasksTable.listId, listId))
             .leftJoin(subTasksTable, eq(tasksTable.id, subTasksTable.taskId))
 
-        const taskWithSubTasks = rawTasksData.map((row) => ({
-            tasks: row.tasks_table,
-            subTasks: row.sub_tasks_table
-        }))
+        const grouped = rawTasksData.reduce(
+            (acc, row) => {
+                const taskId = row.tasks_table.id
+
+                if (!acc[taskId]) {
+                    acc[taskId] = {
+                        tasks: row.tasks_table,
+                        subTasks: []
+                    }
+                }
+
+                if (row.sub_tasks_table) {
+                    acc[taskId].subTasks.push(row.sub_tasks_table)
+                }
+
+                return acc
+            },
+            {} as Record<string, TaskWithSubTasks>
+        )
+
+        const taskWithSubTasks = Object.values(grouped)
 
         const columns = await db
             .select()

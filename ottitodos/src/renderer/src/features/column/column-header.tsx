@@ -18,7 +18,6 @@ type ColumnHeaderProps = {
 }
 
 export const ColumnHeader = ({ listId, column_data, onEdited }: ColumnHeaderProps) => {
-    console.log('ping!')
     const [editName, setEditName] = useState<boolean>(column_data.name === '')
     const [name, setName] = useState<string>(column_data.name || '')
     const formRef = useRef<HTMLFormElement>(null)

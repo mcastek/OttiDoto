@@ -2,7 +2,7 @@ import { SubTask, Task, TasksColumn } from './index'
 
 export type TaskWithSubTasks = {
     tasks: Task
-    subTasks: SubTask | null
+    subTasks: SubTask[]
 }
 
 export type listBoardData = {

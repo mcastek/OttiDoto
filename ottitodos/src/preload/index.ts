@@ -1,7 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 import type { CreateTasksListDTO } from '../db/schemas/tasks-lists.table'
-import { CreateTaskDTO, CreateTasksColumn } from '../db/schemas'
+import { CreateSubTask, CreateTaskDTO, CreateTasksColumn } from '../db/schemas'
 
 // Custom APIs for renderer
 const api = {}
@@ -29,6 +29,10 @@ const taskApi = {
         ipcRenderer.invoke('change-column', taskId, columnId)
 }
 
+const subTaskApi = {
+    createSubTask: (subTask_data: CreateSubTask) =>
+        ipcRenderer.invoke('create-subTask', subTask_data)
+}
 // Use `contextBridge` APIs to expose Electron APIs to
 // renderer only if context isolation is enabled, otherwise
 // just add to the DOM global.
@@ -39,6 +43,7 @@ if (process.contextIsolated) {
         contextBridge.exposeInMainWorld('taskListApi', taskListApi)
         contextBridge.exposeInMainWorld('taskApi', taskApi)
         contextBridge.exposeInMainWorld('columnApi', columnApi)
+        contextBridge.exposeInMainWorld('subTaskApi', subTaskApi)
     } catch (error) {
         console.error(error)
     }

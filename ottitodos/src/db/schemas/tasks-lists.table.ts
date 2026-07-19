@@ -2,8 +2,6 @@ import { sqliteTable, text } from 'drizzle-orm/sqlite-core'
 import { InferSelectModel } from 'drizzle-orm/table'
 import { createInsertSchema } from 'drizzle-orm/zod'
 import z from 'zod'
-import { Task } from './tasks.table'
-import { TasksColumn } from './tasks-columns.table'
 
 export const tasksListsTable = sqliteTable('tasks_lists_table', {
     id: text()

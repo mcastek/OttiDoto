@@ -25,7 +25,9 @@ export const TasksColumnSchema = createInsertSchema(tasksColumnsTable, {
     position: z.number()
 })
 
-export const CreateTasksColumnSchema = TasksColumnSchema.extend({ listId: z.string() })
+export const CreateTasksColumnSchema = TasksColumnSchema.extend({ listId: z.string() }).omit({
+    id: true
+})
 export const CreateTasksColumnInputSchema = TasksColumnSchema.omit({
     editable: true,
     id: true

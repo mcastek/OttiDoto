@@ -1,5 +1,5 @@
 import { Activity, useCallback, useState } from 'react'
-import { Task, TasksColumn, TaskWithSubTasks } from 'src/db/schemas'
+import { TasksColumn, TaskWithSubTasks } from 'src/db/schemas'
 import CreateTaskForm from '../create-task-form'
 import { ColumnHeader } from './column-header'
 import { useSortable } from '@dnd-kit/react/sortable'
