@@ -5,9 +5,11 @@ import { createSubTask } from '../../../formActions/subtask.actions'
 import { Activity, useState } from 'react'
 
 export default function SubTaskList({
+    listId,
     taskId,
     subtask_data
 }: {
+    listId: string
     taskId: string
     subtask_data: SubTask[]
 }) {
@@ -18,11 +20,10 @@ export default function SubTaskList({
     const mutation = useMutation({
         mutationFn: async () => await createSubTask(taskId),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['board'] })
+            queryClient.invalidateQueries({ queryKey: ['board', listId] })
         }
     })
 
-    /* To do: add listId */
     const handleAddNewSubTask = () => {
         const newSubTaska: CreateSubTask = {
             title: '',
@@ -31,7 +32,7 @@ export default function SubTaskList({
             status: false
         }
 
-        queryClient.setQueryData(['board'], (oldBoard: listBoardData) => {
+        queryClient.setQueryData(['board', listId], (oldBoard: listBoardData) => {
             if (!oldBoard) return oldBoard
             console.log('ping')
             return {
@@ -48,6 +49,8 @@ export default function SubTaskList({
                 })
             }
         })
+
+        setOpenList(true)
     }
     const subtaskCount = subtask_data.length
 

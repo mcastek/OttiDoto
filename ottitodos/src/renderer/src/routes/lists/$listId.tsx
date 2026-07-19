@@ -9,7 +9,9 @@ export const Route = createFileRoute('/lists/$listId')({
     component: RouteComponent
 })
 
-const COLUMNSTATE: TasksColumn[] = [
+type StaticColumn = { id: string; name: string; editable: boolean; position: number }
+
+const COLUMNSTATE: StaticColumn[] = [
     { id: 'todo', name: 'To Do', editable: false, position: 1 },
     { id: 'inProgress', name: 'In progress', editable: false, position: 2 },
     { id: 'success', name: 'Done', editable: false, position: 3 }
@@ -34,7 +36,7 @@ function RouteComponent() {
             name: '',
             listId: listId,
             editable: true,
-            position: board ? board.columns.length / 100 : 0
+            position: board ? (board.columns.length + 1) / 100 : 0
         }
 
         queryClient.setQueryData(['board', listId], (oldBoard: any) => ({
@@ -46,8 +48,6 @@ function RouteComponent() {
     if (isLoading) return <div>Loading...</div>
 
     const tasks = board ? board.taskWithSubTasks : []
-
-    console.log(tasks)
 
     return (
         <div>
@@ -90,7 +90,7 @@ function RouteComponent() {
 
                                     const staticIds = COLUMNSTATE.map((c) => c.id)
                                     const dynamicUpdatedColumns = updatedColumns.filter(
-                                        (col) => !staticIds.includes(col.id)
+                                        (col) => !staticIds.includes(col.id!)
                                     )
 
                                     return {
@@ -103,8 +103,7 @@ function RouteComponent() {
                     >
                         {allColumns.map((column) => (
                             <Column
-                                key={`${crypto.randomUUID()}-${column.position}`}
-                                listId={listId}
+                                key={column.id}
                                 column={column}
                                 tasks={tasks.filter((d) => d.tasks.columnId === column.id)}
                             />

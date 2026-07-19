@@ -9,12 +9,11 @@ import TaskCard from '../task/task-card'
 import { PointerSensor } from '@dnd-kit/react'
 
 type ColumnProps = {
-    listId: string
     column: TasksColumn
     tasks?: TaskWithSubTasks[]
 }
 
-export default function Column({ listId, column, tasks }: ColumnProps) {
+export default function Column({ column, tasks }: ColumnProps) {
     const [openCreateCard, setOpenCreateCard] = useState<boolean>(false)
     const [edited, setEdited] = useState<boolean>(false)
     const { ref } = useSortable({
@@ -50,11 +49,7 @@ export default function Column({ listId, column, tasks }: ColumnProps) {
             }}
         >
             <div style={{ display: 'inline-flex', justifyContent: 'space-between' }}>
-                <ColumnHeader
-                    listId={listId}
-                    column_data={column}
-                    onEdited={handleEdited}
-                />
+                <ColumnHeader column_data={column} onEdited={handleEdited} />
                 <Activity mode={column.name !== 'Done' ? 'visible' : 'hidden'}>
                     <button onClick={() => setOpenCreateCard((prev) => !prev)} disabled={edited}>
                         ➕
@@ -63,7 +58,7 @@ export default function Column({ listId, column, tasks }: ColumnProps) {
             </div>
             <Activity mode={openCreateCard ? 'visible' : 'hidden'}>
                 <CreateTaskForm
-                    listId={listId}
+                    listId={column.listId}
                     columnId={column.id!}
                     onCloseForm={() => setOpenCreateCard(false)}
                 />

@@ -1,4 +1,6 @@
-import { CreateTasksColumn, CreateTasksColumnInputSchema } from '../../db/schemas'
+import { CreateTasksColumn, CreateColumnInputSchema } from '../../db/schemas'
+
+export type ColumnPayload = Omit<CreateTasksColumn, 'name'>
 
 export type ColumnFormState = {
     success: boolean
@@ -8,11 +10,12 @@ export type ColumnFormState = {
 
 export async function createColumn(
     _prevState: ColumnFormState,
-    formData: FormData
+    formData: FormData,
+    payload: ColumnPayload
 ): Promise<ColumnFormState> {
     console.log('ping!')
 
-    const validationData = CreateTasksColumnInputSchema.safeParse({
+    const validationData = CreateColumnInputSchema.safeParse({
         name: formData.get('column_name'),
         listId: formData.get('list_id'),
         position: parseFloat(String(formData.get('position')))
@@ -26,21 +29,16 @@ export async function createColumn(
         }
     }
 
-    const { name, listId, position } = validationData.data
+    const { name } = validationData.data
 
-    const newColumnData: CreateTasksColumn = {
-        name: name,
-        listId: listId,
-        editable: true,
-        position: position
-    }
+    const newColumn = {...payload, name}
 
     console.log(
-        `Column: ${newColumnData.name} ${newColumnData.listId} ${newColumnData.editable} ${newColumnData.position}`
+        `Column: ${newColumn.name} ${newColumn.listId} ${newColumn.editable} ${newColumn.position}`
     )
 
     try {
-        await window.columnApi.createColumn(newColumnData)
+        await window.columnApi.createColumn(newColumn)
         return { success: true }
     } catch (error) {
         console.log('Cannot create new column:', error)
