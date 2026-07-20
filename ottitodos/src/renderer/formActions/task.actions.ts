@@ -6,10 +6,7 @@ export type TaskFormState = {
     message?: string
 }
 
-export async function createTask(
-    _prevState: TaskFormState,
-    formData: FormData
-): Promise<TaskFormState> {
+async function createTask(_prevState: TaskFormState, formData: FormData): Promise<TaskFormState> {
     console.log('ping!')
 
     const ValidationData = CreateTaskSchema.safeParse({
@@ -39,3 +36,13 @@ export async function createTask(
         return { success: false, message: `${error}` }
     }
 }
+
+async function moveTask(taskId: string, columnId: string) {
+    try {
+        await window.taskApi.moveTask(taskId, columnId)
+    } catch (error) {
+        console.log(`Cannot move Task`)
+    }
+}
+
+export { createTask, moveTask }

@@ -29,7 +29,7 @@ export class TaskServices {
             throw error
         }
     }
-    async changeColumn(taskId: string, columnId: string): Promise<void> {
+    async moveTask(taskId: string, columnId: string): Promise<void> {
         try {
             await db.update(tasksTable).set({ columnId }).where(eq(tasksTable.id, taskId))
         } catch (error) {

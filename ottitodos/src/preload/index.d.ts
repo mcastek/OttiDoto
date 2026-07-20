@@ -22,7 +22,7 @@ declare global {
             getAllTasksByList: (listId: string) => Promise<Task[]>
             createTask: (task_data: CreateTaskDTO) => Promise<void>
             deleteTask: (taskId: string) => Promise<void>
-            changeColumn: (taskId: string, columnId: string) => Promise<void>
+            moveTask: (taskId: string, columnId: string) => Promise<void>
         }
         subTaskApi: {
             createSubTask: (subTask_data: CreateSubTask) => Promise<void>

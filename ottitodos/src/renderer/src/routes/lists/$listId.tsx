@@ -5,6 +5,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useMemo } from 'react'
 import { TasksColumn } from 'src/db/schemas'
 import { ListContext } from '@renderer/hooks/useListId'
+import { useTaskActions } from '@renderer/features/task/hooks/useTaskActions'
 
 export const Route = createFileRoute('/lists/$listId')({
     component: RouteComponent
@@ -21,6 +22,7 @@ const COLUMNSTATE: StaticColumn[] = [
 function RouteComponent() {
     const { listId } = Route.useParams()
     const queryClient = useQueryClient()
+    const { moveTask } = useTaskActions(listId)
 
     const { data: board, isLoading } = useQuery({
         queryKey: ['board', listId],
@@ -69,6 +71,14 @@ function RouteComponent() {
                             const { source, target } = event.operation
 
                             if (event.canceled || !target) return
+
+                            if (source?.type === 'task' && target?.type === 'column') {
+                                const task = source?.id as string
+                                const toColumn = target?.id as string
+
+                                console.log(`Moving Task: ${task} to column: ${toColumn}`)
+                                moveTask({ taskId: task, columnId: toColumn })
+                            }
 
                             if (source?.type === 'column' && target?.type === 'column') {
                                 const oldIndex = allColumns.findIndex((col) => col.id === source.id)

@@ -14,7 +14,7 @@ export function registerTaskHandlers() {
     handleIpc('delete-task', async (_event, id: string) => {
         return await taskService.delete(id)
     })
-    handleIpc('change-column', async (_event, taskId: string, columnId: string) => {
-        return await taskService.changeColumn(taskId, columnId)
+    handleIpc('move-task', async (_event, taskId: string, columnId: string) => {
+        return await taskService.moveTask(taskId, columnId)
     })
 }

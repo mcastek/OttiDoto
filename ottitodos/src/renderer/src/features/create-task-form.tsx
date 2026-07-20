@@ -1,15 +1,8 @@
 import Input from '@renderer/components/input/input'
 import TextArea from '@renderer/components/text-area/text-area'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { createTask, TaskFormState } from '../../formActions/task.actions'
 import { useRef } from 'react'
 import { useOnClickOutside } from '@renderer/hooks/useOnClickOutside'
-
-const initialState: TaskFormState = {
-    success: false,
-    errors: {},
-    message: ''
-}
+import { useTaskActions } from './task/hooks/useTaskActions'
 
 export default function CreateTaskForm({
     listId,
@@ -21,16 +14,8 @@ export default function CreateTaskForm({
     onCloseForm: () => void
 }) {
     const FormRef = useRef<HTMLFormElement>(null)
-    const queryClient = useQueryClient()
     useOnClickOutside(FormRef, () => onCloseForm())
-
-    const mutation = useMutation({
-        mutationFn: async (formData: FormData) => await createTask(initialState, formData),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['board', listId] })
-            onCloseForm()
-        }
-    })
+    const { createTask, isCreating } = useTaskActions(listId)
 
     return (
         <form
@@ -41,7 +26,8 @@ export default function CreateTaskForm({
 
                 const formData = new FormData(e.currentTarget)
 
-                mutation.mutate(formData)
+                createTask(formData)
+                onCloseForm()
             }}
         >
             <Input name="column_id" type="hidden" value={columnId} />
@@ -52,7 +38,6 @@ export default function CreateTaskForm({
                 labelName="Description"
                 placeholder="add some text..."
             />
-            {mutation.error?.message}
             <div
                 style={{
                     display: 'flex',
@@ -64,7 +49,7 @@ export default function CreateTaskForm({
                 <button type="button" onClick={onCloseForm}>
                     Anuluj
                 </button>
-                <button type="submit" disabled={mutation.isPending}>
+                <button type="submit" disabled={isCreating}>
                     Dodaj
                 </button>
             </div>

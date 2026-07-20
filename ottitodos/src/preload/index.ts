@@ -26,8 +26,8 @@ const taskApi = {
     getAllTasksByList: (listId: string) => ipcRenderer.invoke('get-all-tasks-by-list', listId),
     createTask: (task_data: CreateTaskDTO) => ipcRenderer.invoke('create-task', task_data),
     deleteTask: (taskId: string) => ipcRenderer.invoke('delete-task', taskId),
-    changeColumn: (taskId: string, columnId: string) =>
-        ipcRenderer.invoke('change-column', taskId, columnId)
+    moveTask: (taskId: string, columnId: string) =>
+        ipcRenderer.invoke('move-task', taskId, columnId)
 }
 
 const subTaskApi = {
