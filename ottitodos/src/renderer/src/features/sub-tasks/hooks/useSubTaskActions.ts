@@ -1,13 +1,39 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { changeStatus } from '../../../formActions/subtask.actions'
-import { useListId } from '@renderer/hooks/useListId'
-import { listBoardData } from '../../../../db/schemas'
+import {
+    changeStatus,
+    createSubTask,
+    deleteSubTask,
+    SubTaskFormState,
+    subTaskPayload
+} from '../../../../formActions/subtask.actions'
+import { listBoardData } from '../../../../../db/schemas'
 
-export const CheckBox = ({ subTaskId, status }: { subTaskId: string; status: boolean }) => {
+const initialState: SubTaskFormState = {
+    success: false,
+    errors: {},
+    message: ''
+}
+
+export default function useSubTaskActions(listId: string) {
     const queryClient = useQueryClient()
-    const listId = useListId()
 
-    const mutation = useMutation({
+    const createMutation = useMutation({
+        mutationFn: async ({
+            formData,
+            payload
+        }: {
+            formData: FormData
+            payload: subTaskPayload
+        }) => await createSubTask(initialState, formData, payload),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['board', listId] })
+    })
+
+    const deleteMutation = useMutation({
+        mutationFn: async (subTaskId: string) => await deleteSubTask(subTaskId),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['board', listId] })
+    })
+
+    const changeStatusMutation = useMutation({
         mutationFn: async ({ subTaskId, status }: { subTaskId: string; status: boolean }) => {
             console.log(subTaskId, status)
             await changeStatus(subTaskId, status)
@@ -39,14 +65,11 @@ export const CheckBox = ({ subTaskId, status }: { subTaskId: string; status: boo
         }
     })
 
-    return (
-        <input
-            name="status"
-            type="checkbox"
-            checked={status}
-            onChange={() => {
-                mutation.mutate({ subTaskId, status: !status })
-            }}
-        />
-    )
+    return {
+        createSubTask: createMutation.mutate,
+        deleteSubTask: deleteMutation.mutate,
+        changeStatus: changeStatusMutation.mutate,
+        isCreating: createMutation.isPending,
+        isDeleting: deleteMutation.isPending
+    }
 }

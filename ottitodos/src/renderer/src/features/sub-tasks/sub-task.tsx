@@ -1,51 +1,27 @@
 import { useRef, useState } from 'react'
 import type { SubTask } from '../../../../db/schemas'
-import {
-    createSubTask,
-    SubTaskFormState,
-    subTaskPayload
-} from '../../../formActions/subtask.actions'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
 import { useListId } from '@renderer/hooks/useListId'
 import { useOnClickOutside } from '@renderer/hooks/useOnClickOutside'
 import { handleCancel } from './sub-task.utils'
-import { CheckBox } from './sub-task-checkbox'
-
-const initialState: SubTaskFormState = {
-    success: false,
-    errors: {},
-    message: ''
-}
+import useSubTaskActions from './hooks/useSubTaskActions'
 
 export default function SubTaskCard({ subTask_data }: { subTask_data: SubTask }) {
     const [editSubTask, setEditSubTask] = useState<boolean>(subTask_data.title === '')
     const FormRef = useRef<HTMLFormElement>(null)
     const listId = useListId()
     const queryClient = useQueryClient()
+    const { createSubTask, deleteSubTask, changeStatus } = useSubTaskActions(listId)
     useOnClickOutside(FormRef, () =>
         handleCancel(queryClient, subTask_data, listId, setEditSubTask)
     )
 
-    const mutation = useMutation({
-        mutationFn: async ({
-            formData,
-            payload
-        }: {
-            formData: FormData
-            payload: subTaskPayload
-        }) => await createSubTask(initialState, formData, payload),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['board', listId] })
-            setEditSubTask(false)
-        }
-    })
-
     const onHandleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
         e.preventDefault()
 
-        const newPayload: subTaskPayload = { ...subTask_data }
         const newFormData = new FormData(e.currentTarget)
-        mutation.mutate({ formData: newFormData, payload: newPayload })
+        createSubTask({ formData: newFormData, payload: { ...subTask_data } })
+        setEditSubTask(false)
     }
 
     return (
@@ -74,10 +50,23 @@ export default function SubTaskCard({ subTask_data }: { subTask_data: SubTask })
                     <button type="submit">✔️</button>
                 </>
             ) : (
-                <div style={{ display: 'flex' }}>
-                    <CheckBox subTaskId={subTask_data.id} status={subTask_data.status} />
-                    <p>{subTask_data.title}</p>
-                </div>
+                <>
+                    <div style={{ display: 'flex' }}>
+                        <input
+                            name="status"
+                            type="checkbox"
+                            checked={subTask_data.status}
+                            onChange={() => {
+                                changeStatus({
+                                    subTaskId: subTask_data.id,
+                                    status: !subTask_data.status
+                                })
+                            }}
+                        />
+                        <p>{subTask_data.title}</p>
+                    </div>
+                    <button onClick={() => deleteSubTask(subTask_data.id)}>🗑️</button>
+                </>
             )}
         </form>
     )
