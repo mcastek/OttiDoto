@@ -85,10 +85,7 @@ export const ColumnHeader = ({ column_data, onEdited }: ColumnHeaderProps) => {
                     />
                     <button
                         type="button"
-                        onClick={() => {
-                            setEditName(false)
-                            onEdited?.(false)
-                        }}
+                        onClick={handleCancel}
                     >
                         ❌
                     </button>

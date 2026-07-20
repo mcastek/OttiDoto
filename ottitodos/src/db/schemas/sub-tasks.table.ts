@@ -28,7 +28,7 @@ export const subTaskSchema = createInsertSchema(subTasksTable, {
 })
 export const SubTaskCardSchema = subTaskSchema.extend({ id: z.uuid().nullable() })
 export const CreateSubTaskSchema = subTaskSchema.omit({ id: true })
-export const CreateSubTaskInputSchema = subTaskSchema.omit({ id: true, status: true })
+export const CreateSubTaskInputSchema = subTaskSchema.omit({ id: true, taskId: true, status: true })
 
 export type SubTask = z.infer<typeof subTaskSchema>
 export type SubTaskCardProps = z.infer<typeof SubTaskCardSchema>

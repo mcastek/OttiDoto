@@ -35,7 +35,7 @@ export default function TaskCard({ task_data }: { task_data: TaskWithSubTasks })
                 <p>{taskInfo.description}</p>
             </div>
             <Activity mode={showSubTasks ? 'visible' : 'hidden'}>
-                <SubTaskList listId={taskInfo.listId} taskId={taskInfo.id} subtask_data={subTasks} />
+                <SubTaskList taskId={taskInfo.id} subtask_data={subTasks} />
             </Activity>
         </div>
     )

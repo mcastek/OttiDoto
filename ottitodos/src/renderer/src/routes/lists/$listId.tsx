@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { useMemo } from 'react'
 import { TasksColumn } from 'src/db/schemas'
+import { ListContext } from '@renderer/hooks/useListId'
 
 export const Route = createFileRoute('/lists/$listId')({
     component: RouteComponent
@@ -50,7 +51,7 @@ function RouteComponent() {
     const tasks = board ? board.taskWithSubTasks : []
 
     return (
-        <div>
+        <ListContext value={listId}>
             Hello "/lists/${listId}!<button onClick={handleAddNewColumn}>+</button>
             <div style={{ width: '1200px' }}>
                 <div
@@ -111,6 +112,6 @@ function RouteComponent() {
                     </DragDropProvider>
                 </div>
             </div>
-        </div>
+        </ListContext>
     )
 }

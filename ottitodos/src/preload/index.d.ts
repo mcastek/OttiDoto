@@ -26,10 +26,17 @@ declare global {
         }
         subTaskApi: {
             createSubTask: (subTask_data: CreateSubTask) => Promise<void>
+            deleteSubTask: (subTaskId: string) => Promise<void>
+            changeStatus: ({ subTaskId, status }: ChangeStatusProps) => Promise<void>
         }
         columnApi: {
             createColumn: (column_data: CreateTasksColumn) => Promise<void>
             deleteColumn: (id: string) => Promise<void>
         }
     }
+}
+
+export type ChangeStatusProps = {
+    subTaskId: string
+    status: boolean
 }

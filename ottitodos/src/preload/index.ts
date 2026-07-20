@@ -1,6 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 import type { CreateTasksListDTO } from '../db/schemas/tasks-lists.table'
+import { ChangeStatusProps } from './index.d'
 import { CreateSubTask, CreateTaskDTO, CreateTasksColumn } from '../db/schemas'
 
 // Custom APIs for renderer
@@ -31,7 +32,10 @@ const taskApi = {
 
 const subTaskApi = {
     createSubTask: (subTask_data: CreateSubTask) =>
-        ipcRenderer.invoke('create-subTask', subTask_data)
+        ipcRenderer.invoke('create-subTask', subTask_data),
+    deleteSubTask: (subTaskid: string) => ipcRenderer.invoke('delete-subTask', subTaskid),
+    changeStatus: ({ subTaskId, status }: ChangeStatusProps) =>
+        ipcRenderer.invoke('change-status', { subTaskId, status })
 }
 // Use `contextBridge` APIs to expose Electron APIs to
 // renderer only if context isolation is enabled, otherwise
