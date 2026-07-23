@@ -1,11 +1,19 @@
+/* @refresh reset */
 import { DragDropProvider } from '@dnd-kit/react'
-import Column from '../../features/column/column'
+
+import { flushSync } from 'react-dom'
+
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
-import { useMemo } from 'react'
-import { TasksColumn } from 'src/db/schemas'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { listBoardData, TasksColumn, TaskWithSubTasks } from 'src/db/schemas'
 import { ListContext } from '@renderer/hooks/useListId'
 import { useTaskActions } from '@renderer/features/task/hooks/useTaskActions'
+import { isSortable } from '@dnd-kit/react/sortable'
+import { calculateNewPosition } from '@renderer/utils/calculateNewPosition'
+import { BoardRenderer } from '@renderer/features/board/board'
+import { move } from '@dnd-kit/helpers'
+import { getNewLexorank } from '@renderer/utils/getNewLexoRank'
 
 export const Route = createFileRoute('/lists/$listId')({
     component: RouteComponent
@@ -22,7 +30,8 @@ const COLUMNSTATE: StaticColumn[] = [
 function RouteComponent() {
     const { listId } = Route.useParams()
     const queryClient = useQueryClient()
-    const { moveTask } = useTaskActions(listId)
+    const { moveTask, reorderTask } = useTaskActions(listId)
+    const sourceParentRef = useRef<Element | null>(null)
 
     const { data: board, isLoading } = useQuery({
         queryKey: ['board', listId],
@@ -48,9 +57,23 @@ function RouteComponent() {
         }))
     }
 
-    if (isLoading) return <div>Loading...</div>
+    const tasksByColumn = useMemo(() => {
+        if (!board) return {}
 
-    const tasks = board ? board.taskWithSubTasks : []
+        return board.taskWithSubTasks.reduce(
+            (acc, task) => {
+                const colId = task.tasks.columnId
+                if (!acc[colId]) {
+                    acc[colId] = []
+                }
+                acc[colId].push(task)
+                return acc
+            },
+            {} as Record<string, TaskWithSubTasks[]>
+        )
+    }, [board])
+
+    if (isLoading) return <div>Loading...</div>
 
     return (
         <ListContext value={listId}>
@@ -67,58 +90,95 @@ function RouteComponent() {
                     }}
                 >
                     <DragDropProvider
+                        key={listId}
+                        onDragStart={(event) => {
+                            sourceParentRef.current =
+                                event.operation.source?.element?.parentElement ?? null
+                        }}
+                        onDragOver={({ operation }) => {
+                            const { source, target } = operation
+                            console.log(`${source?.id} is over ${target?.id}`)
+                        }}
                         onDragEnd={(event) => {
                             const { source, target } = event.operation
 
-                            if (event.canceled || !target) return
-
-                            if (source?.type === 'task' && target?.type === 'column') {
-                                const task = source?.id as string
-                                const toColumn = target?.id as string
-
-                                console.log(`Moving Task: ${task} to column: ${toColumn}`)
-                                moveTask({ taskId: task, columnId: toColumn })
+                            const sourceElement = event.operation.source?.element
+                            const prevParent = sourceParentRef.current
+                            sourceParentRef.current = null
+                            if (
+                                sourceElement &&
+                                prevParent &&
+                                sourceElement.parentElement !== prevParent
+                            ) {
+                                prevParent.appendChild(sourceElement)
                             }
 
-                            if (source?.type === 'column' && target?.type === 'column') {
-                                const oldIndex = allColumns.findIndex((col) => col.id === source.id)
-                                const newIndex = allColumns.findIndex((col) => col.id === target.id)
+                            if (event.canceled || !source || !target) return
+                            if (source.type !== 'task' || !isSortable(source)) return
 
-                                if (oldIndex === -1 || newIndex === -1 || oldIndex === newIndex)
-                                    return
+                            const { initialGroup, group, initialIndex, index } = source
 
-                                const reorderedColumns = [...allColumns]
-                                const [movedColumn] = reorderedColumns.splice(oldIndex, 1)
-                                reorderedColumns.splice(newIndex, 0, movedColumn)
+                            const taskId = source.id as string
 
-                                const updatedColumns = reorderedColumns.map((col, index) => ({
-                                    ...col,
-                                    position: index + 1
-                                }))
+                            const columnId =
+                                typeof target.id === 'string' && target.id.startsWith('container-')
+                                    ? target.id.replace('container-', '')
+                                    : (group as string)
 
-                                queryClient.setQueryData(['board', listId], (oldBoard: any) => {
-                                    if (!oldBoard) return
+                            if (initialIndex === index && initialGroup === columnId) return
 
-                                    const staticIds = COLUMNSTATE.map((c) => c.id)
-                                    const dynamicUpdatedColumns = updatedColumns.filter(
-                                        (col) => !staticIds.includes(col.id!)
-                                    )
+                            console.log(`Task: ${taskId}, column: ${columnId}`)
 
-                                    return {
-                                        ...oldBoard,
-                                        columns: dynamicUpdatedColumns
+                            const currentBoard = queryClient.getQueryData([
+                                'board',
+                                listId
+                            ]) as listBoardData
+                            if (!currentBoard) return
+
+                            const tasksInTargetGroup = currentBoard.taskWithSubTasks
+                                .filter(
+                                    (item) =>
+                                        item.tasks.columnId === columnId && item.tasks.id !== taskId
+                                )
+                                .sort((a, b) => a.tasks.position - b.tasks.position)
+
+                            const prevTask = tasksInTargetGroup[index - 1]
+                            const nextTask = tasksInTargetGroup[index]
+                            const newPosition = calculateNewPosition(
+                                prevTask?.tasks?.position,
+                                nextTask?.tasks?.position
+                            )
+
+                            flushSync(() => {
+                                queryClient.setQueryData(
+                                    ['board', listId],
+                                    (old: listBoardData) => {
+                                        if (!old) return old
+                                        const updatedTasks = old.taskWithSubTasks.map((t) =>
+                                            t.tasks.id === taskId
+                                                ? {
+                                                      ...t,
+                                                      tasks: {
+                                                          ...t.tasks,
+                                                          columnId,
+                                                          position: newPosition
+                                                      }
+                                                  }
+                                                : t
+                                        )
+                                        return { ...old, taskWithSubTasks: updatedTasks }
                                     }
-                                })
+                                )
+                            })
+
+                            if (initialGroup !== columnId) {
+                                moveTask({ taskId, columnId, newPosition })
+                            } else {
+                                reorderTask({ taskId, newPosition })
                             }
                         }}
                     >
-                        {allColumns.map((column) => (
-                            <Column
-                                key={column.id}
-                                column={column}
-                                tasks={tasks.filter((d) => d.tasks.columnId === column.id)}
-                            />
-                        ))}
+                        <BoardRenderer allColumns={allColumns} tasksByColumn={tasksByColumn} />
                     </DragDropProvider>
                 </div>
             </div>

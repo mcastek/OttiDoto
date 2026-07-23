@@ -1,6 +1,10 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { createTask, moveTask, TaskFormState } from '../../../../formActions/task.actions'
-import { listBoardData } from 'src/db/schemas'
+import {
+    createTask,
+    moveTask,
+    reorderTask,
+    TaskFormState
+} from '../../../../formActions/task.actions'
 
 const initialState: TaskFormState = {
     success: false,
@@ -18,36 +22,34 @@ export function useTaskActions(listId: string) {
         }
     })
 
+    const reorderTaskMutation = useMutation({
+        mutationFn: async ({ taskId, newPosition }: { taskId: string; newPosition: number }) =>
+            await reorderTask(taskId, newPosition),
+        onError: (error) => {
+            console.error('Move/reorder failed:', error)
+            queryClient.invalidateQueries({ queryKey: ['board', listId] })
+        }
+    })
+
     const moveTaskMutation = useMutation({
-        mutationFn: async ({ taskId, columnId }: { taskId: string; columnId: string }) =>
-            await moveTask(taskId, columnId),
-
-        onMutate: ({ taskId, columnId }: { taskId: string; columnId: string }) => {
-            queryClient.cancelQueries({ queryKey: ['board', listId] })
-
-            const previousQuery = queryClient.getQueryData(['board', listId])
-
-            queryClient.setQueryData(['board', listId], (oldBoard: listBoardData) => ({
-                ...oldBoard,
-                taskWithSubTasks: oldBoard.taskWithSubTasks.map((item) => {
-                    return {
-                        ...item,
-                        tasks: item.tasks.id === taskId ? { ...item.tasks, columnId } : item.tasks
-                    }
-                })
-            }))
-
-            return { previousQuery }
-        },
-        onError: (_, __, context) =>
-            queryClient.setQueryData(['board', listId], context?.previousQuery),
-        onSettled: () => {
+        mutationFn: async ({
+            taskId,
+            columnId,
+            newPosition
+        }: {
+            taskId: string
+            columnId: string
+            newPosition: number
+        }) => await moveTask(taskId, columnId, newPosition),
+        onError: (error) => {
+            console.error('Move failed:', error)
             queryClient.invalidateQueries({ queryKey: ['board', listId] })
         }
     })
 
     return {
         createTask: createMutation.mutate,
+        reorderTask: reorderTaskMutation.mutate,
         moveTask: moveTaskMutation.mutate,
         isCreating: createMutation.isPending
     }

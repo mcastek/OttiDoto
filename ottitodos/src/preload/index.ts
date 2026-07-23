@@ -26,8 +26,10 @@ const taskApi = {
     getAllTasksByList: (listId: string) => ipcRenderer.invoke('get-all-tasks-by-list', listId),
     createTask: (task_data: CreateTaskDTO) => ipcRenderer.invoke('create-task', task_data),
     deleteTask: (taskId: string) => ipcRenderer.invoke('delete-task', taskId),
-    moveTask: (taskId: string, columnId: string) =>
-        ipcRenderer.invoke('move-task', taskId, columnId)
+    moveTask: (taskId: string, columnId: string, newPosition: number) =>
+        ipcRenderer.invoke('move-task', taskId, columnId, newPosition),
+    reorderTask: (taskId: string, position: number) =>
+        ipcRenderer.invoke('reorder-task', taskId, position)
 }
 
 const subTaskApi = {

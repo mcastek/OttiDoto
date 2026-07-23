@@ -37,12 +37,22 @@ async function createTask(_prevState: TaskFormState, formData: FormData): Promis
     }
 }
 
-async function moveTask(taskId: string, columnId: string) {
+async function moveTask(taskId: string, columnId: string, newPosition: number) {
     try {
-        await window.taskApi.moveTask(taskId, columnId)
+        console.log('Moving to other column...', columnId)
+        await window.taskApi.moveTask(taskId, columnId, newPosition)
     } catch (error) {
         console.log(`Cannot move Task`)
     }
 }
 
-export { createTask, moveTask }
+async function reorderTask(taskId: string, position: number) {
+    try {
+        console.log('Reordering action...')
+        await window.taskApi.reorderTask(taskId, position)
+    } catch (error) {
+        console.log(`Cannot reorder Task`)
+    }
+}
+
+export { createTask, moveTask, reorderTask }

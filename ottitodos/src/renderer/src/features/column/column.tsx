@@ -5,30 +5,44 @@ import { ColumnHeader } from './column-header'
 import { useSortable } from '@dnd-kit/react/sortable'
 import { RestrictToHorizontalAxis } from '@dnd-kit/abstract/modifiers'
 import { PointerActivationConstraints } from '@dnd-kit/dom'
-import TaskCard from '../task/task-card'
-import { PointerSensor } from '@dnd-kit/react'
+import { TaskCard } from '../task/task-card'
+import { PointerSensor, useDroppable } from '@dnd-kit/react'
+import { CollisionPriority } from '@dnd-kit/abstract'
+import { closestCenter } from '@dnd-kit/collision'
 
 type ColumnProps = {
     column: TasksColumn
     tasks?: TaskWithSubTasks[]
+    children: React.ReactNode
 }
+const COLUMN_MODIFIERS = [RestrictToHorizontalAxis]
+const COLUMN_ACCEPT = ['column']
+const COLUMN_SENSORS = [
+    PointerSensor.configure({
+        activationConstraints: [
+            new PointerActivationConstraints.Delay({ value: 150, tolerance: 5 })
+        ]
+    })
+]
 
-export default function Column({ column, tasks }: ColumnProps) {
+export default function Column({ column, tasks, children }: ColumnProps) {
     const [openCreateCard, setOpenCreateCard] = useState<boolean>(false)
     const [edited, setEdited] = useState<boolean>(false)
-    const { ref } = useSortable({
+    const { ref: columnRef } = useSortable({
         id: column.id!,
         index: column.position,
-        modifiers: [RestrictToHorizontalAxis],
+        collisionPriority: CollisionPriority.Low,
+        collisionDetector: closestCenter,
+        modifiers: COLUMN_MODIFIERS,
         type: 'column',
-        accept: ['task', 'column'],
-        sensors: [
-            PointerSensor.configure({
-                activationConstraints: [
-                    new PointerActivationConstraints.Delay({ value: 150, tolerance: 5 })
-                ]
-            })
-        ]
+        accept: COLUMN_ACCEPT,
+        sensors: COLUMN_SENSORS
+    })
+
+    const { ref: taskListRef } = useDroppable({
+        id: `container-${column.id}`,
+        data: { type: 'task-list-container', columnId: column.id },
+        accept: 'task'
     })
 
     const handleEdited = useCallback((e: boolean) => {
@@ -38,7 +52,7 @@ export default function Column({ column, tasks }: ColumnProps) {
 
     return (
         <div
-            ref={ref}
+            ref={columnRef}
             style={{
                 display: 'flex',
                 flexDirection: 'column',
@@ -63,10 +77,17 @@ export default function Column({ column, tasks }: ColumnProps) {
                     onCloseForm={() => setOpenCreateCard(false)}
                 />
             </Activity>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '.5em' }}>
-                {tasks?.map((task) => (
-                    <TaskCard task_data={task} />
-                ))}
+            <div
+                ref={taskListRef}
+                style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    width: '100%',
+                    height: '100%',
+                    gap: '.5em'
+                }}
+            >
+                {children}
             </div>
         </div>
     )
